@@ -1,0 +1,74 @@
+
+section {
+  height: 100vh; /* Imposta l'altezza della sezione al 100% della viewport */
+  background-color: #1E2460; /* Colore di sfondo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  height: 100%; /* Assicurati che il container riempia tutta la sezione */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 1200px; /* Limita la larghezza massima */
+  height: 100%; /* La card occupa tutta l'altezza della sezione */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1); /* Aggiungi un'ombra per separarla dallo sfondo */
+  overflow: hidden; /* Per evitare che la card esca dai confini */
+}
+
+.row {
+  height: 100%;
+}
+
+.col-md-6.col-lg-5 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.col-md-6.col-lg-5 img {
+  width: 100%;
+  height: 100%; /* Assicurati che l'immagine occupi tutta l'altezza della card */
+  object-fit: cover; /* Impedisce che l'immagine distorca la proporzione */
+}
+
+.card-body {
+  padding: 3rem 2rem; /* Aumenta il padding per dare più spazio ai contenuti */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.form-outline input {
+  width: 100%;
+  max-width: 350px; /* Limita la larghezza delle caselle di testo */
+  margin: 0 auto; /* Centra le caselle */
+}
+
+h5 {
+  font-size: 1.5rem; /* Riduci leggermente la dimensione del titolo */
+  color: black; /* Cambia il colore del testo in nero */
+}
+
+button {
+  width: 100%;
+  max-width: 350px; /* Limita la larghezza del pulsante */
+  margin: 0 auto; /* Centra il pulsante */
+}
+
+/* Rimuove la necessità di scroll orizzontale */
+body, html {
+  overflow-x: hidden;
+}

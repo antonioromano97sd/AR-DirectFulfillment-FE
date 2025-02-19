@@ -1,0 +1,60 @@
+<div class="container mt-5">
+  <h2>Ordini</h2>
+
+  <!-- Mostra un messaggio di errore se non riesci a caricare gli ordini -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Tabella degli ordini -->
+  <table class="table table-striped" *ngIf="orders.length > 0">
+    <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Numero Ordine</th>
+      <th scope="col">Codice Articolo</th>
+      <th scope="col">Quantità</th>
+      <th scope="col">Data Ordine</th>
+      <th scope="col">Azioni</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let order of orders">
+      <td>{{ order.id }}</td>
+      <td>{{ order.numOrder }}</td>
+      <td>{{ order.codArticle }}</td>
+      <td>{{ order.quantity }}</td>
+      <td>{{ order.orderDate | date:'d MMMM yyyy' }}</td>
+      <td>
+        <!-- Pulsanti per accettare e rifiutare l'ordine -->
+        <button class="btn btn-success btn-sm me-2" (click)="acceptOrder(order.id)">Accetta</button>
+        <button class="btn btn-danger btn-sm" (click)="openRejectModal(order.id)">Rifiuta</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- Se non ci sono ordini, mostra un messaggio -->
+  <div *ngIf="orders.length === 0" class="alert alert-info">
+    Non ci sono ordini da visualizzare.
+  </div>
+
+  <!-- Modale per confermare il rifiuto -->
+  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showRejectModal}" (click)="closeRejectModal()">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Conferma Rifiuto</h5>
+          <button type="button" class="btn-close" (click)="closeRejectModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Sei sicuro di voler rifiutare questo ordine?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeRejectModal()">Annulla</button>
+          <button type="button" class="btn btn-danger" (click)="rejectOrderConfirmed()">Rifiuta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
