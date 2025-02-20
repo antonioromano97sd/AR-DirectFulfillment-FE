@@ -1,0 +1,51 @@
+<header class="py-3 mb-3 border-bottom">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+
+    <!-- Logo e Navigazione -->
+    <nav class="d-flex align-items-center">
+      <a class="navbar-brand me-3" routerLink="/dashboard/orders-dashboard">
+        Gestione Ordini
+      </a>
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link"
+             routerLink="/dashboard/orders-dashboard"
+             routerLinkActive="active-link">
+            Ordini
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Dropdown Utente -->
+    <div class="dropdown">
+      <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle"
+         id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <img src="https://github.com/mdo.png" alt="User" width="32" height="32" class="rounded-circle">
+      </a>
+      <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="userDropdown">
+        <li>
+          <a class="dropdown-item"
+             routerLink="/dashboard/profile"
+             routerLinkActive="active-link">
+            Profilo
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item"
+             routerLink="/dashboard/settings"
+             routerLinkActive="active-link">
+            Impostazioni
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item text-danger" (click)="logout()">Logout</a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</header>
+
+

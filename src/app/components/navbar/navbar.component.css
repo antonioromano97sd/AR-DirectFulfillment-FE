@@ -1,0 +1,7 @@
+/* Evidenzia l'elemento attivo della navbar */
+.active-link {
+  font-weight: bold;
+  color: #007bff !important;  /* Blu Bootstrap */
+  border-bottom: 2px solid #007bff; /* Linea sotto il link attivo */
+  padding-bottom: 2px;
+}
