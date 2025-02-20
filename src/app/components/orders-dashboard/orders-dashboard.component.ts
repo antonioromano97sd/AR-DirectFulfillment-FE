@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Order } from '../../models/order.model';
+import { OrdersService } from '../../services/orders.service';
 
 @Component({
   selector: 'app-orders-dashboard',
@@ -9,20 +10,28 @@ import { Order } from '../../models/order.model';
 })
 export class OrdersDashboardComponent implements OnInit {
   // Dati finti degli ordini; Tipo order
-  orders: Order[] = [
-    new Order(1, '1234', 'ABC123', 10, '2025-02-18'),
-    new Order(2, '5678', 'DEF456', 5, '2025-02-17'),
-    new Order(3, '91011', 'GHI789', 3, '2025-02-16')
-  ];
+  orders: Order[] = [];
   errorMessage: string = '';
 
   showRejectModal: boolean = false; // Per mostrare/nascondere la modale
   orderToRejectId: number | null = null; // ID dell'ordine da rifiutare
 
-  constructor() {}
+  constructor(private ordersService: OrdersService) {}
 
   ngOnInit(): void {
-    // Qui andrebbero le chiamate HTTP per recuperare gli ordini reali dal backend
+    this.loadOrders(); // Carichiamo gli ordini dal backend
+  }
+
+  loadOrders(): void {
+    this.ordersService.getOrders().subscribe({
+      next: (data) => {
+        this.orders = data; // Popoliamo l'array di ordini
+      },
+      error: (err) => {
+        console.error('Errore nel caricamento degli ordini:', err);
+        this.errorMessage = 'Errore nel caricamento degli ordini. Riprova più tardi.';
+      }
+    });
   }
 
   // Metodo per accettare un ordine
