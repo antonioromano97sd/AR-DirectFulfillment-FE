@@ -26,8 +26,10 @@ export class LoginComponent implements OnDestroy {
         console.log('Login avvenuto con successo:', response);
 
         // Reindirizza alla dashboard dopo il login
-        this.router.navigate(['/orders-dashboard']).then(() => {
+        this.router.navigate(['/dashboard/orders-dashboard']).then(() => {
           console.log('Reindirizzamento eseguito con successo!');
+        }).catch((err) => {
+          console.error('Errore nel reindirizzamento:', err);
         });
       },
       error: (err) => {

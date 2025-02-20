@@ -1,24 +1,24 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, provideClientHydration, withEventReplay } from '@angular/platform-browser';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtModule } from '@auth0/angular-jwt';
-
-import { TokenInterceptorService } from './interceptors/token.service';
-import { LoginComponent } from './components/login/login.component';
-
-import { FormsModule } from '@angular/forms';// Importa FormsModule per la gestione dei form
+import { FormsModule } from '@angular/forms';
 import { AuthService } from './services/auth.service';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
-
-import { OrdersDashboardComponent } from './components/orders-dashboard/orders-dashboard.component'; //importa l'interceptor
 import { OrdersService } from './services/orders.service';
-
-import { LOCALE_ID } from '@angular/core'; // Importa LOCALE_ID
-import { registerLocaleData } from '@angular/common'; // Importa registerLocaleData
-import localeIt from '@angular/common/locales/it'; // Importa la lingua italiana
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeIt from '@angular/common/locales/it';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { LoginComponent } from './components/login/login.component';
+import { OrdersDashboardComponent } from './components/orders-dashboard/orders-dashboard.component';
+import { LayoutComponent } from './components/layout/layout.component'; // Assicurati che LayoutComponent sia importato
+import { RouterModule } from '@angular/router'; // Importa RouterModule
+import { CommonModule } from '@angular/common';
+import { ProfileComponent } from './components/profile/profile.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 registerLocaleData(localeIt);//importa la lingua italiana
 
@@ -30,13 +30,19 @@ export function tokenGetter() {
   declarations: [
     AppComponent,
     LoginComponent,
-    OrdersDashboardComponent
+    OrdersDashboardComponent,
+    NavbarComponent,
+    LayoutComponent,
+    ProfileComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,
+    CommonModule,
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
+    RouterModule,
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
