@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import { Order } from '../../models/order.model';
-import { OrdersService } from '../../services/orders.service';
-import { OrderStatusService } from '../../services/order-status.service';
-import { OrderStatus } from '../../models/order-status.enum';
-import { formatDate } from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {GetOrdersResponseModel} from '../../models/order.model';
+import {OrdersService} from '../../services/orders.service';
+import {OrderStatusEnum} from '../../models/order-status.enum';
+import {formatDate} from '@angular/common';
+import {translateOrderStatusEnumFunction} from '../../utils/generic-utils';
 
 @Component({
   selector: 'app-orders-dashboard',
@@ -12,7 +12,7 @@ import { formatDate } from '@angular/common';
 })
 export class OrdersDashboardComponent implements OnInit {
   // Dati fniti degli ordini; Tipo order
-  orders: Order[] = [];
+  orders: GetOrdersResponseModel[] = [];
   errorMessage: string = '';
 
   showRejectModal: boolean = false; // Per mostrare/nascondere la modale
@@ -25,46 +25,36 @@ export class OrdersDashboardComponent implements OnInit {
   showPrintModal: boolean = false; // Variabile per mostrare la modale di stampa
   orderToPrintId: number | null = null; // Memorizza l'ID dell'ordine da stampare
 
+  public translateOrderStatusEnumFunction = translateOrderStatusEnumFunction
 
-  constructor(private ordersService: OrdersService,
-              private orderStatusService: OrderStatusService // Inietta il servizio di traduzione)
-  ){}
+
+  constructor(
+    private ordersService: OrdersService
+  ) {
+  }
 
   ngOnInit(): void {
     this.loadOrders(); // Carichiamo gli ordini dal backend
   }
 
-  getStatusDescription(status: OrderStatus): string {
-    return this.orderStatusService.getDescription(status);
+
+  loadOrders(): void {
+    this.ordersService.getOrders().subscribe({
+      next: (data) => {
+        console.log('Ordini caricati:', data);
+        this.orders = data || [];
+      },
+      error: (err) => {
+        console.error('Errore nel caricamento degli ordini:', err);
+        this.errorMessage = 'Errore nel caricamento degli ordini. Riprova più tardi.';
+      }
+    });
   }
 
-
-loadOrders(): void {
-  this.ordersService.getOrders().subscribe({
-    next: (data) => {
-      console.log('Ordini caricati:', data);
-      this.orders = data.map(order => ({
-        id: order.id,
-        codeOrder: order.codeOrder,
-        codeProduct: order.codeProduct,
-        quantity: order.quantity,
-        status: order.status as OrderStatus,
-        orderDate: order.orderDate ? this.formatDateToItalian(order.orderDate) : 'Data non disponibile'
-      }));
-    },
-    error: (err) => {
-      console.error('Errore nel caricamento degli ordini:', err);
-      this.errorMessage = 'Errore nel caricamento degli ordini. Riprova più tardi.';
-    }
-  });
-}
-
-formatDateToItalian(dateString: string): string {
-  const date = new Date(dateString);
-  return formatDate(date, 'd MMMM yyyy', 'it-IT'); // "2 febbraio 2024"
-}
-
-
+  formatDateToItalian(dateString: string): string {
+    const date = new Date(dateString);
+    return formatDate(date, 'd MMMM yyyy', 'it-IT'); // "2 febbraio 2024"
+  }
 
 
 // Metodo per aprire la modale di stampa
@@ -72,6 +62,7 @@ formatDateToItalian(dateString: string): string {
     this.orderToPrintId = orderId;
     this.showPrintModal = true;
   }
+
   // Metodo per chiudere la modale di stampa
   closePrintModal(): void {
     this.showPrintModal = false;
@@ -80,17 +71,12 @@ formatDateToItalian(dateString: string): string {
 
   // chiama il backend per accettare un ordine
   acceptOrder(orderId: number): void {
-    this.ordersService.acceptOrder(orderId).subscribe({
+    this.ordersService.updateStatusOrder({
+      orderId,
+      status: OrderStatusEnum.ACCEPTED
+    }).subscribe({
       next: (response) => {
-        console.log(`Risposta dal backend: ${JSON.stringify(response)}`);
-
-        console.log(`Ordine con ID ${orderId} accettato.`);
-
-        // Modifica lo stato dell'ordine nella lista
-        this.orders = this.orders.map(order =>
-          order.id === orderId ? { ...order, status: OrderStatus.ACCEPTED } : order
-        );
-
+        this.orders = response
       },
       error: (err) => {
         console.error('Errore nell\'accettare l\'ordine:', err);
@@ -108,28 +94,21 @@ formatDateToItalian(dateString: string): string {
       console.log(`Richiesta di rifiuto inviata per ordine ID: ${this.orderToRejectId}`);
       console.log(`Motivo del rifiuto: ${this.rejectReason}`);
 
-      this.ordersService.rejectOrder(this.orderToRejectId, this.rejectReason).subscribe({
-        next: () => {
-          console.log(`Ordine con ID ${this.orderToRejectId} rifiutato e rimosso.`);
-
-          // Rimuovi l'ordine dalla lista
-          this.orders = this.orders.filter(order => order.id !== this.orderToRejectId);
-          this.orderToRejectId = null;
-
-          // Nascondi la modale
-          this.showRejectModal = false;
-
-          // Resetta il motivo del rifiuto
-          this.rejectReason = '';
-
+      this.ordersService.updateStatusOrder({
+        orderId: this.orderToRejectId,
+        status: OrderStatusEnum.CANCELLED,
+        motivation: this.rejectReason
+      }).subscribe({
+        next: (response) => {
+          this.orders = response;
+          this.closeRejectModal();
         },
         error: (err) => {
-          console.error('Errore nel rifiutare l\'ordine:', err);
-          this.errorMessage = 'Errore nel rifiutare l\'ordine. Riprova più tardi.';
+          console.error('Errore nell\'accettare l\'ordine:', err);
+          this.errorMessage = 'Errore nell\'accettare l\'ordine. Riprova più tardi.';
         }
       });
-    }
-    else {
+    } else {
       // Aggiungi un log di errore per il motivo vuoto
       console.log('Errore: Il motivo del rifiuto non è stato inserito.');
     }
@@ -141,10 +120,11 @@ formatDateToItalian(dateString: string): string {
     this.showRejectModal = true; // Mostriamo la modale
     this.rejectReason = ''; // Resetta il campo del motivo
   }
-  closeRejectModal(event: MouseEvent): void {
-    event.stopPropagation();
+
+  closeRejectModal(event?: MouseEvent): void {
+    if (event) event.stopPropagation();
     this.showRejectModal = false;// Nasconde la modale
   }
 
-  protected readonly OrderStatus = OrderStatus;
+  protected readonly OrderStatus = OrderStatusEnum;
 }

@@ -1,4 +1,4 @@
-export enum OrderStatus {
+export enum OrderStatusEnum {
   NEW = 'NEW',
   CANCELLED = 'CANCELLED',
   ACCEPTED = 'ACCEPTED',

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LoginModel } from '../models/login.model';
+import { LoginRequestModel } from '../models/loginRequestModel';
 
 import { tap } from 'rxjs/operators';
 import {environment} from '../../environments/environment'; // tap per eseguire azioni sulla risposta
@@ -16,7 +16,7 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   //metodo login
-  login(credentials: LoginModel): Observable<any> {
+  login(credentials: LoginRequestModel): Observable<any> {
     console.log('Dati inviati al backend:', JSON.stringify(credentials));
 
     // Effettua una richiesta POST con i dati di login (username e password)

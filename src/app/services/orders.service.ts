@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Order } from '../models/order.model';
+import { GetOrdersResponseModel } from '../models/order.model';
 import { tap, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 import { of } from 'rxjs';
+import {UpdateStatusRequestModel} from '../models/update-status-request-model';
 
 
 @Injectable({
@@ -19,60 +20,15 @@ export class OrdersService {
   constructor(private http: HttpClient) {}
 
   // Chiamata API per ottenere gli ordini dal backend
-  getOrders(): Observable<Order[]> {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      console.error('Token non trovato! Utente non autenticato.');
-      return throwError(() => new Error('Token non presente.'));
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    });
-
-    return this.http.get<Order[]>(this.apiUrl, { headers }).pipe(
-      tap(response => console.log('Dati ricevuti dal backend:', response)),
-      catchError(error => {
-        console.error('Errore nel caricamento degli ordini:', error);
-        return throwError(() => error);
-      })
-    );
+  getOrders(): Observable<GetOrdersResponseModel[]> {
+    return this.http.get<GetOrdersResponseModel[]>(this.apiUrl);
   }
 
 
 
-  // Metodo per accettare un ordine
-  acceptOrder(orderId: number): Observable<void> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
-    return this.http.patch<void>(`${this.apiUrl}/${orderId}`, {status: 'ACCETTATO'}, {headers}).pipe(
-      tap(() => console.log(`Ordine ${orderId} accettato`)),
-      catchError(error => {
-        console.error('Errore nell’accettare l’ordine:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-
-  // Metodo per rifiutare un ordine
-  rejectOrder(orderId: number, reason: string): Observable<void> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
-    return this.http.patch<void>(`${this.apiUrl}/${orderId}`, {status: 'RIFIUTATO', reason}, {headers}).pipe(
-      tap(() => console.log(`Ordine ${orderId} rifiutato con motivo: ${reason}`)),
-      catchError(error => {
-        console.error('Errore nel rifiutare l’ordine:', error);
-        return throwError(() => error);
-      })
-    );
+  // Metodo per modificare lo stato di un ordine
+  updateStatusOrder(updateStatusRequestModel: UpdateStatusRequestModel): Observable<GetOrdersResponseModel[]> {
+    return this.http.put<GetOrdersResponseModel[]>(`${this.apiUrl}/status`, updateStatusRequestModel);
   }
 
   uploadOrderFile(orderId: number | null, fileData: FormData): Observable<any> {

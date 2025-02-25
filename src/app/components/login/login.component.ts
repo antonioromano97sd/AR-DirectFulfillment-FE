@@ -1,7 +1,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
-import { LoginModel } from '../../models/login.model';
+import { LoginRequestModel } from '../../models/loginRequestModel';
 import {Subscription} from 'rxjs';
 
 @Component({
@@ -10,7 +10,7 @@ import {Subscription} from 'rxjs';
   templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnDestroy {
-  loginData: LoginModel = new LoginModel('', '');// Modello per username e password
+  loginData: LoginRequestModel = new LoginRequestModel('', '');// Modello per username e password
   errorMessage: string = ''; // Messaggio di errore
   private s: Subscription | undefined;
 
