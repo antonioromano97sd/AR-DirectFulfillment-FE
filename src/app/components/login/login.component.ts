@@ -7,8 +7,7 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'app-login',
   standalone: false,
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnDestroy {
   loginData: LoginModel = new LoginModel('', '');// Modello per username e password

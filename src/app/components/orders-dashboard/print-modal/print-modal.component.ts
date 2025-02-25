@@ -4,8 +4,7 @@ import { OrdersService } from '../../../services/orders.service';
 @Component({
   selector: 'app-print-modal',
   standalone: false,
-  templateUrl: './print-modal.component.html',
-  styleUrl: './print-modal.component.css'
+  templateUrl: './print-modal.component.html'
 })
 export class PrintModalComponent {
   @Input() orderId: number | null = null;

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
+import {describe, it} from 'node:test';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -20,16 +21,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'ProgettoTirocinio'`, () => {
+  it(`should have as title 'AR-DirectFulfillment-FE'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('ProgettoTirocinio');
+    expect(app.title).toEqual('AR-DirectFulfillment-FE');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, ProgettoTirocinio');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, AR-DirectFulfillment-FE');
   });
 });

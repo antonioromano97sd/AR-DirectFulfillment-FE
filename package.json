@@ -1,46 +1,45 @@
 {
-  "name": "progetto-tirocinio",
+  "name": "AR-DirectFulfillment-FE",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config=src/proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "serve:ssr:ProgettoTirocinio": "node dist/progetto-tirocinio/server/server.mjs"
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^19.1.0",
-    "@angular/common": "^19.1.0",
-    "@angular/compiler": "^19.1.0",
-    "@angular/core": "^19.1.0",
-    "@angular/forms": "^19.1.0",
-    "@angular/platform-browser": "^19.1.0",
-    "@angular/platform-browser-dynamic": "^19.1.0",
-    "@angular/platform-server": "^19.1.0",
-    "@angular/router": "^19.1.0",
-    "@angular/ssr": "^19.1.6",
+    "@angular/animations": "16.2.12",
+    "@angular/common": "16.2.12",
+    "@angular/compiler": "16.2.12",
+    "@angular/core": "16.2.12",
+    "@angular/forms": "16.2.12",
+    "@angular/platform-browser": "16.2.12",
+    "@angular/platform-browser-dynamic": "16.2.12",
+    "@angular/platform-server": "16.2.12",
+    "@angular/router": "16.2.12",
     "@auth0/angular-jwt": "^5.2.0",
     "bootstrap": "^5.3.3",
     "express": "^4.18.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.13.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.1.6",
-    "@angular/cli": "^19.1.6",
-    "@angular/compiler-cli": "^19.1.0",
-    "@types/express": "^4.17.17",
-    "@types/jasmine": "~5.1.0",
-    "@types/node": "^18.18.0",
-    "jasmine-core": "~5.5.0",
+    "@angular-devkit/build-angular": "16.2.12",
+    "@angular/cli": "16.2.12",
+    "@angular/compiler-cli": "16.2.12",
+    "@types/node": "^16.14.0",
+    "typescript": "~5.1.6",
+    "jasmine-core": "~5.0.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.7.2"
+    "karma-jasmine": "~5.0.0",
+    "karma-jasmine-html-reporter": "~2.1.0"
+  },
+  "engines": {
+    "node": ">=16.14.0"
   }
 }

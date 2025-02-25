@@ -8,8 +8,7 @@ import { formatDate } from '@angular/common';
 @Component({
   selector: 'app-orders-dashboard',
   standalone: false,
-  templateUrl: './orders-dashboard.component.html',
-  styleUrl: './orders-dashboard.component.css'
+  templateUrl: './orders-dashboard.component.html'
 })
 export class OrdersDashboardComponent implements OnInit {
   // Dati fniti degli ordini; Tipo order
