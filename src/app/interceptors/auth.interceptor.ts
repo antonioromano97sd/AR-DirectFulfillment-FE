@@ -20,8 +20,6 @@ export class AuthInterceptor implements HttpInterceptor {
       });
 
       return next.handle(cloned); // Passiamo la richiesta clonata con il token
-    }
-
-    return next.handle(req); // Se non c'è il token, procediamo con la richiesta originale
+    }else{return next.handle(req);} // Se non c'è il token, procediamo con la richiesta originale
   }
 }

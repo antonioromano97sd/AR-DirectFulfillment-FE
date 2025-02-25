@@ -10,51 +10,84 @@
   <table class="table table-striped" *ngIf="orders.length > 0">
     <thead>
     <tr>
-      <th scope="col">ID</th>
+      <th scope="col">ID Ordine</th>
       <th scope="col">Numero Ordine</th>
       <th scope="col">Codice Articolo</th>
       <th scope="col">Quantità</th>
       <th scope="col">Data Ordine</th>
+      <th scope="col">Stato</th>
       <th scope="col">Azioni</th>
     </tr>
     </thead>
     <tbody>
     <tr *ngFor="let order of orders">
       <td>{{ order.id }}</td>
-      <td>{{ order.numOrder }}</td>
-      <td>{{ order.codArticle }}</td>
+      <td>{{ order.codeOrder }}</td>
+      <td>{{ order.codeProduct }}</td>
       <td>{{ order.quantity }}</td>
-      <td>{{ order.orderDate | date:'d MMMM yyyy' }}</td>
+      <td>{{ order.orderDate }}</td>
+      <td>{{ getStatusDescription(order.status) }}</td>
+
       <td>
-        <!-- Pulsanti per accettare e rifiutare l'ordine -->
+        <ng-container *ngIf="order.status === OrderStatus.NEW">
+
         <button class="btn btn-success btn-sm me-2" (click)="acceptOrder(order.id)">Accetta</button>
-        <button class="btn btn-danger btn-sm" (click)="openRejectModal(order.id)">Rifiuta</button>
+          <button class="btn btn-danger btn-sm" (click)="openRejectModal(order.id)">Rifiuta</button>
+        </ng-container>
+        <ng-container *ngIf="order.status === OrderStatus.ACCEPTED">
+        <button class="btn btn-primary btn-sm" (click)="openPrintModal(order.id)">
+            Stampa Etichetta
+          </button>
+        </ng-container>
+
+        <!--Modale per la stampa dell'etichetta -->
+        <app-print-modal
+          *ngIf="showPrintModal"
+          [orderId]="orderToPrintId"
+          (close)="closePrintModal()"
+        ></app-print-modal>
+
       </td>
     </tr>
     </tbody>
   </table>
 
-  <!-- Se non ci sono ordini, mostra un messaggio -->
   <div *ngIf="orders.length === 0" class="alert alert-info">
     Non ci sono ordini da visualizzare.
   </div>
 
   <!-- Modale per confermare il rifiuto -->
-  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showRejectModal}" (click)="closeRejectModal()">
-    <div class="modal-dialog">
+  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showRejectModal}" (click)="closeRejectModal($event)">
+    <div class="modal-dialog" (click)="$event.stopPropagation()"> <!-- Impedisce che il click sulla dialog faccia chiudere la modale -->
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Conferma Rifiuto</h5>
-          <button type="button" class="btn-close" (click)="closeRejectModal()"></button>
+          <button type="button" class="btn-close" (click)="closeRejectModal($event)"></button>
         </div>
         <div class="modal-body">
           <p>Sei sicuro di voler rifiutare questo ordine?</p>
+
+          <!-- Campo di testo obbligatorio -->
+          <div class="mb-3">
+            <label for="rejectReason" class="form-label">Motivo del rifiuto</label>
+            <textarea id="rejectReason" class="form-control" [(ngModel)]="rejectReason" required></textarea>
+
+            <!-- Messaggio di errore se il motivo è vuoto -->
+            <div *ngIf="rejectReason.trim() === ''" class="text-danger">
+              Il motivo è obbligatorio.
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeRejectModal()">Annulla</button>
-          <button type="button" class="btn btn-danger" (click)="rejectOrderConfirmed()">Rifiuta</button>
+          <button type="button" class="btn btn-secondary" (click)="closeRejectModal($event)">Annulla</button>
+          <button type="button" class="btn btn-danger" [disabled]="rejectReason.trim().length===0" (click)="rejectOrderConfirmed()">Rifiuta</button>
         </div>
       </div>
     </div>
   </div>
+
+
 </div>
+
+
+

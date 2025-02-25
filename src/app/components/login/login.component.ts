@@ -18,12 +18,18 @@ export class LoginComponent implements OnDestroy {
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    console.log('onSubmit() chiamato!');//per verificare se la funzione viene eseguita
+    console.log('onSubmit() chiamato!'); // Verifica che la funzione venga eseguita
 
     // Chiama l'API di login con le credenziali
     this.authService.login(this.loginData).subscribe({
       next: (response) => {
         console.log('Login avvenuto con successo:', response);
+
+        // Salva il token nel localStorage
+        if (response && response.token) {
+          localStorage.setItem('token', response.token); // Salvataggio del token nel localStorage
+          console.log('Token salvato nel localStorage');
+        }
 
         // Reindirizza alla dashboard dopo il login
         this.router.navigate(['/dashboard/orders-dashboard']).then(() => {
@@ -38,6 +44,7 @@ export class LoginComponent implements OnDestroy {
       }
     });
   }
+
 
 
   public ngOnDestroy(){

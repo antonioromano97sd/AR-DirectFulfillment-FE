@@ -1,16 +1,31 @@
+import { OrderStatus } from './order-status.enum';
 
 export class Order {
   id: number;
-  numOrder: string;
-  codArticle: string;
+  codeOrder: string;
+  codeProduct: string;
   quantity: number;
-  orderDate: string; // O può essere anche Date se preferisci trattarlo come oggetto Date
+  status: OrderStatus; // enum per evitare errori
+  orderDate?: string; //opzionale da rivedere quando arrivano i dati dal be
 
-  constructor(id: number, numOrder: string, codArticle: string, quantity: number, orderDate: string) {
+  constructor(id: number, codeOrder: string, codeProduct: string, quantity: number, status: OrderStatus = OrderStatus.NEW) {
     this.id = id;
-    this.numOrder = numOrder;
-    this.codArticle = codArticle;
+    this.codeOrder = codeOrder;
+    this.codeProduct = codeProduct;
     this.quantity = quantity;
-    this.orderDate = orderDate;
+    this.status = status;
   }
 }
+
+
+
+
+export interface Order {
+  id: number;
+  codeOrder: string;
+  codeProduct: string;
+  quantity: number;
+  status: OrderStatus;
+}
+
+

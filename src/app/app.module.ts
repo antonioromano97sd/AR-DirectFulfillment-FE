@@ -14,11 +14,12 @@ import localeIt from '@angular/common/locales/it';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { LoginComponent } from './components/login/login.component';
 import { OrdersDashboardComponent } from './components/orders-dashboard/orders-dashboard.component';
-import { LayoutComponent } from './components/layout/layout.component'; // Assicurati che LayoutComponent sia importato
-import { RouterModule } from '@angular/router'; // Importa RouterModule
+import { LayoutComponent } from './components/layout/layout.component';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProfileComponent } from './components/profile/profile.component';
 import { SettingsComponent } from './components/settings/settings.component';
+import { PrintModalComponent } from './components/orders-dashboard/print-modal/print-modal.component';
 
 registerLocaleData(localeIt);//importa la lingua italiana
 
@@ -34,7 +35,8 @@ export function tokenGetter() {
     NavbarComponent,
     LayoutComponent,
     ProfileComponent,
-    SettingsComponent
+    SettingsComponent,
+    PrintModalComponent
   ],
   imports: [
     BrowserModule,
@@ -46,7 +48,7 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        allowedDomains: ['localhost:3000'], // Sostituire con il dominio del backend
+        allowedDomains: ['localhost:3000'],
         disallowedRoutes: ['localhost:3000/api/auth/login'] // Percorsi dove NON inviare il token
       }
     })
