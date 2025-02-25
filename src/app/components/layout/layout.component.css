@@ -1,0 +1,24 @@
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.nav-link {
+  font-size: 1rem;
+}
+
+.nav-link.active {
+  font-weight: bold;
+}
+
+.dropdown-menu {
+  min-width: 150px;
+}
+
+.dropdown-item.text-danger {
+  color: red;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #ffebeb;
+}

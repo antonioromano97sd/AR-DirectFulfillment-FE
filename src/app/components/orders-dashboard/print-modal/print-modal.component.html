@@ -1,0 +1,19 @@
+<div class="modal d-block" (click)="close.emit()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Carica File per Stampa Etichetta</h5>
+        <button type="button" class="btn-close" (click)="close.emit()"></button>
+      </div>
+      <div class="modal-body">
+        <input type="file" (change)="onFileSelected($event)" class="form-control mb-3" />
+        <div *ngIf="errorMessage" class="text-danger">{{ errorMessage }}</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="close.emit()">Annulla</button>
+        <button class="btn btn-primary" [disabled]="!selectedFile" (click)="uploadFile()">Carica e Stampa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
