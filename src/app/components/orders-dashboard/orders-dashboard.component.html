@@ -1,22 +1,27 @@
 <div class="container mt-5">
-  <h2>Ordini</h2>
+  <h2>{{ isCancelled ? 'Ordini Cancellati' : 'Ordini' }}</h2>
 
-  <!-- Mostra un messaggio di errore se non riesci a caricare gli ordini -->
+  <!-- Mostra un messaggio di errore se non riesce a caricare gli ordini -->
   <div *ngIf="errorMessage" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
   <!-- Tabella degli ordini -->
   <table class="table table-striped" *ngIf="orders.length > 0">
-    <thead>
+  <thead>
     <tr>
       <th scope="col">ID Ordine</th>
       <th scope="col">Numero Ordine</th>
       <th scope="col">Codice Articolo</th>
+      <th scope="col">Descrizione Articolo</th>
+      <th scope="col">SKU Articolo</th>
       <th scope="col">Quantità</th>
+      <th scope="col">Indirizzo di Consegna</th>
+      <th scope="col">Corriere</th>
+      <th scope="col">Data di Consegna</th>
       <th scope="col">Data Ordine</th>
-      <th scope="col">Stato</th>
-      <th scope="col">Azioni</th>
+      <th scope="col" *ngIf="!isCancelled">Stato</th> <!-- Rimuove la colonna "Stato" se si guardano ordini cancellati -->
+      <th scope="col" *ngIf="!isCancelled">Azioni</th> <!-- Rimuove le azioni per gli ordini cancellati -->
     </tr>
     </thead>
     <tbody>
@@ -24,33 +29,47 @@
       <td>{{ order.id }}</td>
       <td>{{ order.code }}</td>
       <td>{{ order.articleCode }}</td>
+      <td>{{ order.articleDescription }}</td>
+      <td>{{ order.articleSku }}</td>
       <td>{{ order.quantity }}</td>
+      <td>{{ order.deliveryAddress }}</td>
+      <td>{{ order.deliveryCarrier }}</td>
+      <td>{{ order.deliveryDate }}</td>
       <td>{{ order.orderedAt }}</td>
-      <td>{{ translateOrderStatusEnumFunction(order.status) }}</td>
 
-      <td>
+      <!-- Mostra lo stato solo se non è la tabella degli ordini cancellati -->
+      <td *ngIf="!isCancelled">{{ translateOrderStatusEnumFunction(order.status) }}</td>
+
+      <!-- Mostra le azioni solo se non è la tabella degli ordini cancellati -->
+      <td *ngIf="!isCancelled">
         <ng-container *ngIf="order.status === OrderStatus.NEW">
-
-        <button class="btn btn-success btn-sm me-2" (click)="acceptOrder(order.id)">Accetta</button>
+          <button class="btn btn-success btn-sm me-2" (click)="acceptOrder(order.id)">Accetta</button>
           <button class="btn btn-danger btn-sm" (click)="openRejectModal(order.id)">Rifiuta</button>
         </ng-container>
         <ng-container *ngIf="order.status === OrderStatus.ACCEPTED">
-        <button class="btn btn-primary btn-sm" (click)="openPrintModal(order.id)">
+          <button class="btn btn-secondary btn-sm me-2"
+                  (click)="printLabel(order.id)"
+                  [disabled]="isLabelPrinted(order.id)">
             Stampa Etichetta
           </button>
+
+          <!--Pulsante per aprire la modale di caricamento ricevuta -->
+          <button class="btn btn-success btn-sm" (click)="openUploadReceiptModal(order.id)">
+            Carica Ricevuta
+          </button>
         </ng-container>
-
-        <!--Modale per la stampa dell'etichetta -->
-        <app-print-modal
-          *ngIf="showPrintModal"
-          [orderId]="orderToPrintId"
-          (close)="closePrintModal()"
-        ></app-print-modal>
-
       </td>
     </tr>
     </tbody>
   </table>
+
+
+  <!-- modale stampa fuori dalla tabella per evitare problemi di visibilità -->
+  <app-print-modal
+    *ngIf="showPrintModal"
+    [orderId]="orderToPrintId"
+    (close)="closePrintModal()"
+  ></app-print-modal>
 
   <div *ngIf="orders.length === 0" class="alert alert-info">
     Non ci sono ordini da visualizzare.
@@ -58,7 +77,10 @@
 
   <!-- Modale per confermare il rifiuto -->
   <div class="modal" tabindex="-1" [ngClass]="{'d-block': showRejectModal}" (click)="closeRejectModal($event)">
-    <div class="modal-dialog" (click)="$event.stopPropagation()"> <!-- Impedisce che il click sulla dialog faccia chiudere la modale -->
+
+    <!-- impedisce che il click sulla dialog faccia chiudera la modale -->
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Conferma Rifiuto</h5>
@@ -67,12 +89,12 @@
         <div class="modal-body">
           <p>Sei sicuro di voler rifiutare questo ordine?</p>
 
-          <!-- Campo di testo obbligatorio -->
+          <!-- campo di testo obbligatorio -->
           <div class="mb-3">
             <label for="rejectReason" class="form-label">Motivo del rifiuto</label>
             <textarea id="rejectReason" class="form-control" [(ngModel)]="rejectReason" required></textarea>
 
-            <!-- Messaggio di errore se il motivo è vuoto -->
+            <!-- messaggio di errore se il motivo è vuoto -->
             <div *ngIf="rejectReason.trim() === ''" class="text-danger">
               Il motivo è obbligatorio.
             </div>
@@ -81,6 +103,27 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" (click)="closeRejectModal($event)">Annulla</button>
           <button type="button" class="btn btn-danger" [disabled]="rejectReason.trim().length===0" (click)="rejectOrderConfirmed()">Rifiuta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modale per il caricamento della ricevuta -->
+  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showUploadReceiptModal}" (click)="closeUploadReceiptModal()">
+    <div class="modal-dialog" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Carica Ricevuta</h5>
+          <button type="button" class="btn-close" (click)="closeUploadReceiptModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Seleziona la ricevuta da caricare per l'ordine ID: {{ orderToUploadId }}</p>
+          <input type="file" class="form-control">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeUploadReceiptModal()">Annulla</button>
+          <button type="button" class="btn btn-primary">Carica</button>
         </div>
       </div>
     </div>

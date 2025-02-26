@@ -5,8 +5,6 @@ import { environment } from '../../environments/environment';
 import { GetOrdersResponseModel } from '../models/order.model';
 import { tap, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-
-import { of } from 'rxjs';
 import {UpdateStatusRequestModel} from '../models/update-status-request-model';
 
 
@@ -20,8 +18,9 @@ export class OrdersService {
   constructor(private http: HttpClient) {}
 
   // Chiamata API per ottenere gli ordini dal backend
-  getOrders(): Observable<GetOrdersResponseModel[]> {
-    return this.http.get<GetOrdersResponseModel[]>(this.apiUrl);
+  getOrders(isCancelled: boolean = false): Observable<GetOrdersResponseModel[]> {
+    const statusParam = isCancelled ? 'CANCELLED' : 'ACTIVE'; // Definisce il parametro
+    return this.http.get<GetOrdersResponseModel[]>(`${this.apiUrl}?status=${statusParam}`); // Usa statusParam nell'URL
   }
 
 

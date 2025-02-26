@@ -12,7 +12,8 @@ const routes: Routes = [
     path: 'dashboard',
     component: LayoutComponent, // Il layout con la navbar fissa
     children: [
-      { path: 'orders-dashboard', component: OrdersDashboardComponent }, // Dashboard caricata sotto la navbar
+      { path: 'orders-dashboard', component: OrdersDashboardComponent, data: { isCancelled: false } }, // Ordini attivi
+      { path: 'cancelled-orders', component: OrdersDashboardComponent, data: { isCancelled: true } },  // Ordini cancellati
       { path: 'profile', component: ProfileComponent }, // profilo
       { path: 'settings', component: SettingsComponent },//impostazioni
     ]

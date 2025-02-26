@@ -5,6 +5,10 @@ import {OrderStatusEnum} from '../../models/order-status.enum';
 import {formatDate} from '@angular/common';
 import {translateOrderStatusEnumFunction} from '../../utils/generic-utils';
 
+import { ActivatedRoute } from '@angular/router';
+
+import { saveAs } from 'file-saver'; // Importa FileSaver.js
+
 @Component({
   selector: 'app-orders-dashboard',
   standalone: false,
@@ -14,6 +18,8 @@ export class OrdersDashboardComponent implements OnInit {
   // Dati fniti degli ordini; Tipo order
   orders: GetOrdersResponseModel[] = [];
   errorMessage: string = '';
+  isCancelled: boolean = false; // flag per determinare gli ordini cancellati e distinguere gli ordini
+
 
   showRejectModal: boolean = false; // Per mostrare/nascondere la modale
   orderToRejectId: number | null = null; // ID dell'ordine da rifiutare
@@ -21,35 +27,49 @@ export class OrdersDashboardComponent implements OnInit {
   // Variabile per il campo del motivo di rifiuto
   rejectReason: string = '';
 
-  // Stato per la modale di stampa
-  showPrintModal: boolean = false; // Variabile per mostrare la modale di stampa
-  orderToPrintId: number | null = null; // Memorizza l'ID dell'ordine da stampare
+  // Stati per gestire il pulsante di stampa
+  printedOrders: Set<number> = new Set(); // Salva ID degli ordini già stampati
 
   public translateOrderStatusEnumFunction = translateOrderStatusEnumFunction
 
 
   constructor(
-    private ordersService: OrdersService
+    private ordersService: OrdersService,
+    private route: ActivatedRoute // Per ottenere il parametro dalla rotta per gli ordini cancellati
   ) {
   }
 
   ngOnInit(): void {
-    this.loadOrders(); // Carichiamo gli ordini dal backend
+    this.route.url.subscribe((urlSegments) => {
+      // Se la rotta è /dashboard/cancelled-orders, carica gli ordini cancellati
+      if (urlSegments.length > 0) {
+        // Controlla il path per determinare se sono ordini cancellati
+        console.log("Path:", urlSegments[0].path);
+        this.isCancelled = urlSegments[0].path === 'cancelled-orders';
+        console.log("IsCancelled:", this.isCancelled);
+
+        this.loadOrders(); // Carica gli ordini dal BE con il filtro corretto
+      }
+    });
   }
 
 
   loadOrders(): void {
-    this.ordersService.getOrders().subscribe({
+    this.ordersService.getOrders(this.isCancelled).subscribe({
       next: (data) => {
         console.log('Ordini caricati:', data);
         this.orders = data || [];
       },
       error: (err) => {
         console.error('Errore nel caricamento degli ordini:', err);
-        this.errorMessage = 'Errore nel caricamento degli ordini. Riprova più tardi.';
+        this.orders = []; // si a3ssicura che la tabella sia vuota in caso di errore
+        this.errorMessage = this.isCancelled
+          ? 'Errore nel caricamento degli ordini cancellati. Riprova più tardi.'
+          : 'Errore nel caricamento degli ordini. Riprova più tardi.';
       }
     });
   }
+
 
   formatDateToItalian(dateString: string): string {
     const date = new Date(dateString);
@@ -57,16 +77,18 @@ export class OrdersDashboardComponent implements OnInit {
   }
 
 
-// Metodo per aprire la modale di stampa
-  openPrintModal(orderId: number): void {
-    this.orderToPrintId = orderId;
-    this.showPrintModal = true;
+// Metodo per scaricare il file dell'etichetta (per ora un file fittizio)
+  printLabel(orderId: number): void {
+    const blob = new Blob(['Simulazione etichetta ordine ' + orderId], { type: 'text/plain' });
+    saveAs(blob, `etichetta_${orderId}.txt`);
+
+    // Disabilita il bottone per questo ordine
+    this.printedOrders.add(orderId);
   }
 
-  // Metodo per chiudere la modale di stampa
-  closePrintModal(): void {
-    this.showPrintModal = false;
-    this.orderToPrintId = null;
+  // Metodo per verificare se il pulsante deve essere disabilitato
+  isLabelPrinted(orderId: number): boolean {
+    return this.printedOrders.has(orderId);
   }
 
   // chiama il backend per accettare un ordine
@@ -124,6 +146,16 @@ export class OrdersDashboardComponent implements OnInit {
   closeRejectModal(event?: MouseEvent): void {
     if (event) event.stopPropagation();
     this.showRejectModal = false;// Nasconde la modale
+  }
+// Metodi per la modale di caricamento ricevuta
+  openUploadReceiptModal(orderId: number): void {
+    this.orderToUploadId = orderId;
+    this.showUploadReceiptModal = true;
+  }
+
+  closeUploadReceiptModal(): void {
+    this.showUploadReceiptModal = false;
+    this.orderToUploadId = null;
   }
 
   protected readonly OrderStatus = OrderStatusEnum;
