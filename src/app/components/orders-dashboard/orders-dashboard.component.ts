@@ -2,161 +2,159 @@ import {Component, OnInit} from '@angular/core';
 import {GetOrdersResponseModel} from '../../models/order.model';
 import {OrdersService} from '../../services/orders.service';
 import {OrderStatusEnum} from '../../models/order-status.enum';
-import {formatDate} from '@angular/common';
 import {translateOrderStatusEnumFunction} from '../../utils/generic-utils';
 
-import { ActivatedRoute } from '@angular/router';
 
-import { saveAs } from 'file-saver'; // Importa FileSaver.js
+import {ActivatedRoute} from '@angular/router';
+import {PagingModel} from '../../models/paging.model';
+import {HttpParams} from '@angular/common/http';
+import {OrderUtilService} from '../../services/order-util.service';
+import {combineLatest} from 'rxjs';
+import {swalSuccess, textSwalConfirmation} from '../../utils/swal.util';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import * as FileSaver from 'file-saver';
 
 @Component({
   selector: 'app-orders-dashboard',
   standalone: false,
-  templateUrl: './orders-dashboard.component.html'
+  templateUrl: './orders-dashboard.component.html',
+  styleUrls: ['./orders-dashboard.component.css']
 })
 export class OrdersDashboardComponent implements OnInit {
-  // Dati fniti degli ordini; Tipo order
-  orders: GetOrdersResponseModel[] = [];
-  errorMessage: string = '';
-  isCancelled: boolean = false; // flag per determinare gli ordini cancellati e distinguere gli ordini
 
+  public currentWarehouse: string = '';
+  public currentPage: number = 0;
+  public maxPagesToShow: number = 5; // Numero massimo di pagine visibili
+  public startPage: number = 0;
+  public endPage: number = this.maxPagesToShow - 1;
+  public orders!: PagingModel<GetOrdersResponseModel[]>;
+  public orderStatusEnum = OrderStatusEnum;
+  public translateOrderStatusEnumFunction = translateOrderStatusEnumFunction;
+  public selectedOrder: GetOrdersResponseModel | null = null;
 
-  showRejectModal: boolean = false; // Per mostrare/nascondere la modale
-  orderToRejectId: number | null = null; // ID dell'ordine da rifiutare
+  public cancellationReason: string = '';
 
-  // Variabile per il campo del motivo di rifiuto
-  rejectReason: string = '';
-
-  // Stati per gestire il pulsante di stampa
-  printedOrders: Set<number> = new Set(); // Salva ID degli ordini già stampati
-
-  public translateOrderStatusEnumFunction = translateOrderStatusEnumFunction
+  private statusFilter!: OrderStatusEnum;
 
 
   constructor(
     private ordersService: OrdersService,
-    private route: ActivatedRoute // Per ottenere il parametro dalla rotta per gli ordini cancellati
+    private orderUtilService: OrderUtilService,
+    private modalService: NgbModal,
+    private route: ActivatedRoute
   ) {
   }
 
   ngOnInit(): void {
-    this.route.url.subscribe((urlSegments) => {
-      // Se la rotta è /dashboard/cancelled-orders, carica gli ordini cancellati
-      if (urlSegments.length > 0) {
-        // Controlla il path per determinare se sono ordini cancellati
-        console.log("Path:", urlSegments[0].path);
-        this.isCancelled = urlSegments[0].path === 'cancelled-orders';
-        console.log("IsCancelled:", this.isCancelled);
-
-        this.loadOrders(); // Carica gli ordini dal BE con il filtro corretto
-      }
+    combineLatest([
+      this.route.params,
+      this.orderUtilService.globalWarehouseSelected
+    ]).subscribe(([routeData, warehouseValue]) => {
+      this.statusFilter = routeData['status'] as OrderStatusEnum;
+      this.currentPage = 0;
+      this.currentWarehouse = warehouseValue
+      this.loadOrders(this.currentPage);
     });
   }
 
 
-  loadOrders(): void {
-    this.ordersService.getOrders(this.isCancelled).subscribe({
+  loadOrders(page: number): void {
+    let httpParams: HttpParams = new HttpParams()
+      .set('status', this.statusFilter)
+      .set('page', page)
+      .set('size', 20)
+      .set('sortBy', 'id')
+      .set('sortDirection', 'DESC');
+    if (this.currentWarehouse !== 'ALL')
+      httpParams = httpParams.set('warehouse', this.currentWarehouse)
+    this.ordersService.getOrders(httpParams).subscribe({
       next: (data) => {
-        console.log('Ordini caricati:', data);
-        this.orders = data || [];
+        this.currentPage = data.pageNumber;
+        this.orders = data || null;
+        this.updatePageRange();
       },
       error: (err) => {
         console.error('Errore nel caricamento degli ordini:', err);
-        this.orders = []; // si a3ssicura che la tabella sia vuota in caso di errore
-        this.errorMessage = this.isCancelled
-          ? 'Errore nel caricamento degli ordini cancellati. Riprova più tardi.'
-          : 'Errore nel caricamento degli ordini. Riprova più tardi.';
       }
     });
   }
 
-
-  formatDateToItalian(dateString: string): string {
-    const date = new Date(dateString);
-    return formatDate(date, 'd MMMM yyyy', 'it-IT'); // "2 febbraio 2024"
-  }
-
-
-// Metodo per scaricare il file dell'etichetta (per ora un file fittizio)
-  printLabel(orderId: number): void {
-    const blob = new Blob(['Simulazione etichetta ordine ' + orderId], { type: 'text/plain' });
-    saveAs(blob, `etichetta_${orderId}.txt`);
-
-    // Disabilita il bottone per questo ordine
-    this.printedOrders.add(orderId);
-  }
-
-  // Metodo per verificare se il pulsante deve essere disabilitato
-  isLabelPrinted(orderId: number): boolean {
-    return this.printedOrders.has(orderId);
-  }
-
-  // chiama il backend per accettare un ordine
-  acceptOrder(orderId: number): void {
-    this.ordersService.updateStatusOrder({
-      orderId,
-      status: OrderStatusEnum.ACCEPTED
-    }).subscribe({
-      next: (response) => {
-        this.orders = response
-      },
-      error: (err) => {
-        console.error('Errore nell\'accettare l\'ordine:', err);
-        this.errorMessage = 'Errore nell\'accettare l\'ordine. Riprova più tardi.';
-      }
-    });
-  }
-
-  // chiama il backend per rifiutare un ordine
-  rejectOrderConfirmed(): void {
-
-    if (this.orderToRejectId !== null && this.rejectReason.trim() !== '') {
-
-      // log per vedere che la funzione è stata chiamata
-      console.log(`Richiesta di rifiuto inviata per ordine ID: ${this.orderToRejectId}`);
-      console.log(`Motivo del rifiuto: ${this.rejectReason}`);
-
-      this.ordersService.updateStatusOrder({
-        orderId: this.orderToRejectId,
-        status: OrderStatusEnum.CANCELLED,
-        motivation: this.rejectReason
-      }).subscribe({
-        next: (response) => {
-          this.orders = response;
-          this.closeRejectModal();
-        },
-        error: (err) => {
-          console.error('Errore nell\'accettare l\'ordine:', err);
-          this.errorMessage = 'Errore nell\'accettare l\'ordine. Riprova più tardi.';
-        }
-      });
-    } else {
-      // Aggiungi un log di errore per il motivo vuoto
-      console.log('Errore: Il motivo del rifiuto non è stato inserito.');
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.orders.totalPages) {
+      this.loadOrders(page);
     }
   }
 
-  // Per la modale di conferma rifiuto
-  openRejectModal(orderId: number): void {
-    this.orderToRejectId = orderId; // Memorizziamo l'ID dell'ordine da rifiutare
-    this.showRejectModal = true; // Mostriamo la modale
-    this.rejectReason = ''; // Resetta il campo del motivo
+  // Aggiorna l'intervallo di pagine da mostrare
+  updatePageRange(): void {
+    const halfRange = Math.floor(this.maxPagesToShow / 2);
+    if (this.currentPage - halfRange <= 0) {
+      this.startPage = 0;
+      this.endPage = Math.min(this.maxPagesToShow - 1, this.orders.totalPages - 1);
+    } else if (this.currentPage + halfRange >= this.orders.totalPages) {
+      this.startPage = this.orders.totalPages - this.maxPagesToShow;
+      this.endPage = this.orders.totalPages - 1;
+    } else {
+      this.startPage = this.currentPage - halfRange;
+      this.endPage = this.currentPage + halfRange;
+    }
   }
 
-  closeRejectModal(event?: MouseEvent): void {
-    if (event) event.stopPropagation();
-    this.showRejectModal = false;// Nasconde la modale
-  }
-// Metodi per la modale di caricamento ricevuta
-  openUploadReceiptModal(orderId: number): void {
-    this.orderToUploadId = orderId;
-    this.showUploadReceiptModal = true;
+  acceptOrder(order: GetOrdersResponseModel): void {
+    textSwalConfirmation(`Stai accettando l'ordine ${order.code}`).then(result => {
+      if (result.isConfirmed) {
+        this.ordersService.updateStatusOrder({
+          orderId: order.id,
+          status: OrderStatusEnum.ACCEPTED
+        }).subscribe({
+          next: (response) => {
+            swalSuccess(`Ordine ${order.code} accettato`)
+            this.loadOrders(this.currentPage);
+          },
+          error: (err) => {
+            console.error('Errore nell\'accettare l\'ordine:', err);
+          }
+        });
+      }
+    });
   }
 
-  closeUploadReceiptModal(): void {
-    this.showUploadReceiptModal = false;
-    this.orderToUploadId = null;
+  openRejectModal(content: any, order: GetOrdersResponseModel): void {
+    this.selectedOrder = order;
+    this.modalService.open(content, {centered: true}).result.then(
+      (result) => {
+        if (result === 'confirm') {
+          this.rejectOrder(order);
+        }
+      },
+      () => {
+      }
+    );
   }
 
-  protected readonly OrderStatus = OrderStatusEnum;
+  rejectOrder(order: GetOrdersResponseModel): void {
+    this.ordersService.updateStatusOrder({
+      orderId: order.id,
+      status: OrderStatusEnum.CANCELLED,
+      motivation: this.cancellationReason
+    }).subscribe({
+      next: (response) => {
+        //this.orders = response;
+        this.cancellationReason = '';
+        this.modalService.dismissAll();
+        this.loadOrders(this.currentPage);
+      },
+      error: (err) => {
+        console.error('Errore nell\'accettare l\'ordine:', err);
+      }
+    });
+
+  }
+
+
+  printLabel(orderId: number): void {
+    const blob = new Blob(['Simulazione etichetta ordine ' + orderId], {type: 'text/plain'});
+    FileSaver.saveAs(blob, 'Etichetta_' + orderId);
+  }
+
 }

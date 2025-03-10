@@ -1,0 +1,18 @@
+.carousel-container {
+  width: 200px; /* Imposta la larghezza del carosello */
+  min-width: 200px;
+}
+
+.carousel-container img {
+  width: 100%;  /* Occupa sempre tutto lo spazio del carosello */
+  height: 250px;
+  object-fit: cover; /* Evita distorsioni, ritaglia l'immagine */
+}
+
+.card-header {
+  background-color: #131921;
+}
+
+.td-head {
+  width: 150px;
+}

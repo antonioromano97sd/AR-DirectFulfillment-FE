@@ -1,50 +1,17 @@
-<section class="vh-100" style="background-color: #1E2460;">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col col-xl-8"> <!-- Aumentata per far crescere la card -->
-        <div class="card" style="border-radius: 1rem; height: 100%; overflow: hidden;"> <!-- Altezza della card -->
-          <div class="row g-0">
-            <div class="col-md-6 col-lg-5 d-none d-md-block">
-              <!-- immagine -->
-              <img src="assets/pacchi.png" alt="login form" class="img-fluid" style="height: 100%; width: 100%; object-fit: cover;" />
-            </div>
-            <div class="col-md-6 col-lg-7 d-flex align-items-center">
-              <div class="card-body p-4 p-lg-5 text-black">
-
-                <!-- Titolo accedi -->
-                <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px; color: black;">Accedi al tuo account</h5>
-
-                <!-- Messaggio di errore -->
-                <div *ngIf="errorMessage" class="alert alert-warning">
-                  ⚠️ Credenziali errate. Riprova!
-                </div>
-
-                <!-- Form di login -->
-                <form (ngSubmit)="onSubmit()">
-
-                  <!-- Campo per Username -->
-                  <div class="form-outline mb-2">
-                    <label class="form-label" for="username">Username</label>
-                    <input type="text" id="username" class="form-control form-control-lg" [(ngModel)]="loginData.username" name="username" required>
-                  </div>
-
-                  <!-- Campo per Password -->
-                  <div class="form-outline mb-2">
-                    <label class="form-label" for="password">Password</label>
-                    <input type="password" id="password" class="form-control form-control-lg" [(ngModel)]="loginData.password" name="password" required>
-                  </div>
-
-                  <!-- Pulsante di login -->
-                  <div class="pt-1 mb-4">
-                    <button class="btn btn-dark btn-lg btn-block" type="submit">Login</button>
-                  </div>
-
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="login-container vh-100">
+  <form class="form-signin" (ngSubmit)="onSubmit()">
+    <div class="d-flex justify-content-center">
+      <img src="assets/logo-letter-7.png" alt="Logo">
     </div>
-  </div>
-</section>
+    <div class="mt-lg-5">
+      <div *ngIf="errorMessage" class="alert alert-primary" role="alert">
+        {{errorMessage}}
+      </div>
+      <label for="inputEmail" class="sr-only fw-bold">Username</label>
+      <input type="email"  name="username" id="inputEmail" class="form-control" required [(ngModel)]="loginData.username">
+      <label for="inputPassword" class="sr-only fw-bold">Password</label>
+      <input type="password" name="password" id="inputPassword" class="form-control" required [(ngModel)]="loginData.password">
+      <button class="mt-lg-5 btn btn-block btn-blue-logo fw-bold" type="submit">Entra</button>
+    </div>
+  </form>
+</div>

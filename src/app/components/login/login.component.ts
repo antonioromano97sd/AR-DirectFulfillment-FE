@@ -7,7 +7,8 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'app-login',
   standalone: false,
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnDestroy {
   loginData: LoginRequestModel = new LoginRequestModel('', '');// Modello per username e password
@@ -17,28 +18,19 @@ export class LoginComponent implements OnDestroy {
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    console.log('onSubmit() chiamato!'); // Verifica che la funzione venga eseguita
-
     // Chiama l'API di login con le credenziali
+    this.authService.removeTokenFromLocalStorage();
     this.authService.login(this.loginData).subscribe({
       next: (response) => {
-        console.log('Login avvenuto con successo:', response);
-
         // Salva il token nel localStorage
         if (response && response.token) {
           localStorage.setItem('token', response.token); // Salvataggio del token nel localStorage
-          console.log('Token salvato nel localStorage');
         }
 
         // Reindirizza alla dashboard dopo il login
-        this.router.navigate(['/dashboard/orders-dashboard']).then(() => {
-          console.log('Reindirizzamento eseguito con successo!');
-        }).catch((err) => {
-          console.error('Errore nel reindirizzamento:', err);
-        });
+        this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
-        console.error('⚠️ Errore nel login:', err);
+      error: () => {
         this.errorMessage = 'Credenziali non valide. Riprova.';
       }
     });

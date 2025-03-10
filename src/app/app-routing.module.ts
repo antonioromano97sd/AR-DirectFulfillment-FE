@@ -1,24 +1,24 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { OrdersDashboardComponent } from './components/orders-dashboard/orders-dashboard.component';
-import { LayoutComponent } from './components/layout/layout.component';
-import { ProfileComponent } from './components/profile/profile.component';
-import { SettingsComponent } from './components/settings/settings.component';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
+import {LoginComponent} from './components/login/login.component';
+import {OrdersDashboardComponent} from './components/orders-dashboard/orders-dashboard.component';
+import {LayoutComponent} from './components/layout/layout.component';
+import {ProfileComponent} from './components/profile/profile.component';
+import {SettingsComponent} from './components/settings/settings.component';
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent },
+  {path: 'login', component: LoginComponent},
   {
     path: 'dashboard',
     component: LayoutComponent, // Il layout con la navbar fissa
     children: [
-      { path: 'orders-dashboard', component: OrdersDashboardComponent, data: { isCancelled: false } }, // Ordini attivi
-      { path: 'cancelled-orders', component: OrdersDashboardComponent, data: { isCancelled: true } },  // Ordini cancellati
-      { path: 'profile', component: ProfileComponent }, // profilo
-      { path: 'settings', component: SettingsComponent },//impostazioni
+      {path: 'orders/:status', component: OrdersDashboardComponent}, // Ordini attivi
+      {path: 'cancelled-orders', component: OrdersDashboardComponent},  // Ordini cancellati
+      {path: 'profile', component: ProfileComponent}, // profilo
+      {path: 'settings', component: SettingsComponent},//impostazioni
     ]
   },
-  { path: '**', redirectTo: 'login' }// Reindirizza alla login se l'URL è sbagliato
+  {path: '**', redirectTo: 'login'}// Reindirizza alla login se l'URL è sbagliato
 ];
 
 
@@ -26,4 +26,5 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {
+}

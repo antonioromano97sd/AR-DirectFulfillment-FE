@@ -1,4 +1,4 @@
-<header class="py-3 mb-3 border-bottom">
+<header class="py-3 border-bottom" style="background-color: #131921; position: sticky; top:0; z-index: 9">
   <div class="container-fluid d-flex justify-content-between align-items-center">
 
     <!-- Logo e Navigazione -->
@@ -6,27 +6,56 @@
       <a class="navbar-brand me-3" routerLink="/dashboard/orders-dashboard">
       </a>
       <ul class="nav">
-        <li class="nav-item">
-          <a class="nav-link"
-             routerLink="/dashboard/orders-dashboard"
-             routerLinkActive="active-link">
-            Ordini
-          </a>
+        <li class="nav-item" style="margin-right: 20px">
+          <button class="btn text-white"
+                  routerLink="/dashboard"
+                  routerLinkActive="active-link"
+                  [routerLinkActiveOptions]="{exact:true}">
+            Dashboard
+          </button>
+        </li>
+        <li class="nav-item" style="margin-right: 20px">
+          <button class="btn text-white"
+                  routerLink="/dashboard/orders/{{orderStatusEnum.NEW}}"
+                  routerLinkActive="active-link">
+            Ordini Nuovi
+          </button>
         </li>
         <!-- link per gli ordini cancellati -->
-        <li class="nav-item">
-          <a class="nav-link"
-             routerLink="/dashboard/cancelled-orders"
-             routerLinkActive="active-link">
+        <li class="nav-item" style="margin-right: 20px">
+          <button class="btn text-white"
+                  routerLink="/dashboard/orders/{{orderStatusEnum.ACCEPTED}}"
+                  routerLinkActive="active-link">
+            Ordini da spedire
+          </button>
+        </li>
+        <!-- link per gli ordini cancellati -->
+        <li class="nav-item" style="margin-right: 20px">
+          <button class="btn text-white"
+                  routerLink="/dashboard/orders/{{orderStatusEnum.SHIPPED}}"
+                  routerLinkActive="active-link">
+            Ordini spediti
+          </button>
+        </li>
+        <!-- link per gli ordini cancellati -->
+        <li class="nav-item" style="margin-right: 20px">
+          <button class="btn text-white"
+                  routerLink="/dashboard/orders/{{orderStatusEnum.CANCELLED}}"
+                  routerLinkActive="active-link">
             Ordini Cancellati
-          </a>
+          </button>
         </li>
       </ul>
     </nav>
 
     <!-- Dropdown Utente -->
     <div class="dropdown">
-      <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle"
+      <select class="d-inline-block me-4 form-select form-select-sm" style="width: auto" [(ngModel)]="selectedWarehouse"
+              (ngModelChange)="setGlobalWarehouse()">
+        <option [ngValue]="'ALL'">Tutti i magazzini</option>
+        <option *ngFor="let w of warehouses" [ngValue]="w">{{w}}</option>
+      </select>
+      <a href="#" class="d-inline-block link-dark text-decoration-none dropdown-toggle"
          id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <img src="assets/default-profile.png" alt="User" width="32" height="32" class="rounded-circle">
       </a>
@@ -45,7 +74,9 @@
             Impostazioni
           </a>
         </li>
-        <li><hr class="dropdown-divider"></li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
         <li>
           <a class="dropdown-item text-danger" (click)="logout()">Logout</a>
         </li>

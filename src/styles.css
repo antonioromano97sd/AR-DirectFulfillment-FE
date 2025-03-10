@@ -1,1 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
+.ellipsis-text {
+  max-width: 150px;  /* Imposta la larghezza massima della cella */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-blue-logo {
+  background-color: #6993ff;
+  color: #fff;
+}

@@ -1,4 +1,4 @@
-import {LOCALE_ID, NgModule} from '@angular/core';
+import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
@@ -17,6 +17,7 @@ import {RouterModule} from '@angular/router';
 import {ProfileComponent} from './components/profile/profile.component';
 import {SettingsComponent} from './components/settings/settings.component';
 import {PrintModalComponent} from './components/orders-dashboard/print-modal/print-modal.component';
+import {NgbCarouselModule, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 
 export function tokenGetter() {
@@ -41,6 +42,7 @@ export function tokenGetter() {
     FormsModule,
     HttpClientModule,
     RouterModule,
+    NgbCarouselModule,
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
@@ -52,8 +54,7 @@ export function tokenGetter() {
   providers: [
     OrdersService,
     AuthService,
-    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true},
-    {provide: LOCALE_ID, useValue: 'it'} // Imposta la lingua italiana
+    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}
   ],
   bootstrap: [AppComponent]
 })

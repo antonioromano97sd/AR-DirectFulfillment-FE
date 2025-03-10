@@ -1,136 +1,151 @@
-<div class="container mt-5">
-  <h2>{{ isCancelled ? 'Ordini Cancellati' : 'Ordini' }}</h2>
-
-  <!-- Mostra un messaggio di errore se non riesce a caricare gli ordini -->
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
-  </div>
-
-  <!-- Tabella degli ordini -->
-  <table class="table table-striped" *ngIf="orders.length > 0">
-  <thead>
-    <tr>
-      <th scope="col">ID Ordine</th>
-      <th scope="col">Numero Ordine</th>
-      <th scope="col">Codice Articolo</th>
-      <th scope="col">Descrizione Articolo</th>
-      <th scope="col">SKU Articolo</th>
-      <th scope="col">Quantità</th>
-      <th scope="col">Indirizzo di Consegna</th>
-      <th scope="col">Corriere</th>
-      <th scope="col">Data di Consegna</th>
-      <th scope="col">Data Ordine</th>
-      <th scope="col" *ngIf="!isCancelled">Stato</th> <!-- Rimuove la colonna "Stato" se si guardano ordini cancellati -->
-      <th scope="col" *ngIf="!isCancelled">Azioni</th> <!-- Rimuove le azioni per gli ordini cancellati -->
-    </tr>
-    </thead>
-    <tbody>
-    <tr *ngFor="let order of orders">
-      <td>{{ order.id }}</td>
-      <td>{{ order.code }}</td>
-      <td>{{ order.articleCode }}</td>
-      <td>{{ order.articleDescription }}</td>
-      <td>{{ order.articleSku }}</td>
-      <td>{{ order.quantity }}</td>
-      <td>{{ order.deliveryAddress }}</td>
-      <td>{{ order.deliveryCarrier }}</td>
-      <td>{{ order.deliveryDate }}</td>
-      <td>{{ order.orderedAt }}</td>
-
-      <!-- Mostra lo stato solo se non è la tabella degli ordini cancellati -->
-      <td *ngIf="!isCancelled">{{ translateOrderStatusEnumFunction(order.status) }}</td>
-
-      <!-- Mostra le azioni solo se non è la tabella degli ordini cancellati -->
-      <td *ngIf="!isCancelled">
-        <ng-container *ngIf="order.status === OrderStatus.NEW">
-          <button class="btn btn-success btn-sm me-2" (click)="acceptOrder(order.id)">Accetta</button>
-          <button class="btn btn-danger btn-sm" (click)="openRejectModal(order.id)">Rifiuta</button>
-        </ng-container>
-        <ng-container *ngIf="order.status === OrderStatus.ACCEPTED">
-          <button class="btn btn-secondary btn-sm me-2"
-                  (click)="printLabel(order.id)"
-                  [disabled]="isLabelPrinted(order.id)">
-            Stampa Etichetta
-          </button>
-
-          <!--Pulsante per aprire la modale di caricamento ricevuta -->
-          <button class="btn btn-success btn-sm" (click)="openUploadReceiptModal(order.id)">
-            Carica Ricevuta
-          </button>
-        </ng-container>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-
-
-  <!-- modale stampa fuori dalla tabella per evitare problemi di visibilità -->
-  <app-print-modal
-    *ngIf="showPrintModal"
-    [orderId]="orderToPrintId"
-    (close)="closePrintModal()"
-  ></app-print-modal>
-
-  <div *ngIf="orders.length === 0" class="alert alert-info">
-    Non ci sono ordini da visualizzare.
-  </div>
-
-  <!-- Modale per confermare il rifiuto -->
-  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showRejectModal}" (click)="closeRejectModal($event)">
-
-    <!-- impedisce che il click sulla dialog faccia chiudera la modale -->
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Conferma Rifiuto</h5>
-          <button type="button" class="btn-close" (click)="closeRejectModal($event)"></button>
+<div class="container-fluid px-0">
+  <div class="row">
+    <div class="col-md-9">
+      <div class="d-flex justify-content-between">
+        <div class="flex-grow-0">
+          <p class="text-muted">{{orders.content.length}} elementi di {{orders.totalElements}} totali</p>
         </div>
-        <div class="modal-body">
-          <p>Sei sicuro di voler rifiutare questo ordine?</p>
+        <div class="flex-grow-0">
+          <nav aria-label="Paginazione ordini" class="me-2">
+            <ul class="pagination pagination-sm">
 
-          <!-- campo di testo obbligatorio -->
-          <div class="mb-3">
-            <label for="rejectReason" class="form-label">Motivo del rifiuto</label>
-            <textarea id="rejectReason" class="form-control" [(ngModel)]="rejectReason" required></textarea>
+              <!-- Pulsante "Precedente" -->
+              <li class="page-item" [class.disabled]="orders.first">
+                <a class="page-link" (click)="goToPage(currentPage - 1)" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
 
-            <!-- messaggio di errore se il motivo è vuoto -->
-            <div *ngIf="rejectReason.trim() === ''" class="text-danger">
-              Il motivo è obbligatorio.
+              <!-- Pagine dinamiche (mostra solo un range di 5 pagine) -->
+              <li class="page-item">
+                <a class="page-link" (click)="goToPage(startPage)">First</a>
+              </li>
+
+              <!-- Pagine dinamiche (mostra solo un range di 5 pagine) -->
+              <li *ngFor="let i of [].constructor(endPage - startPage + 1); let index = index"
+                  class="page-item" [class.active]="(startPage + index) === currentPage">
+                <a class="page-link" (click)="goToPage(startPage + index)">{{ startPage + index + 1 }}</a>
+              </li>
+
+
+              <!-- Pagine dinamiche (mostra solo un range di 5 pagine) -->
+              <li class="page-item">
+                <a class="page-link" (click)="goToPage(endPage)">Last</a>
+              </li>
+
+              <!-- Pulsante "Successivo" -->
+              <li class="page-item" [class.disabled]="orders.last">
+                <a class="page-link" (click)="goToPage(currentPage + 1)" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 mb-3" *ngFor="let order of orders.content">
+          <div class="card shadow-sm">
+            <div class="card-header text-white d-flex justify-content-between align-items-center">
+              <!-- Sezione Ordine (Sinistra) -->
+              <div>
+                <span class="card-title fw-bold">Ordine: {{ order.code }} </span>
+              </div>
+
+              <!-- Sezione Pulsanti (Destra) -->
+              <div>
+                <ng-container *ngIf="order.status === orderStatusEnum.NEW">
+                  <button class="btn btn-success btn-sm me-2 fw-bold" (click)="acceptOrder(order)">Accetta</button>
+                  <button class="btn btn-danger btn-sm fw-bold" (click)="openRejectModal(rejectOrderModal, order)">Rifiuta
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="order.status === orderStatusEnum.ACCEPTED">
+                  <button class="btn btn-secondary btn-sm me-2 fw-bold" (click)="printLabel(order.id)">Stampa etichetta
+                  </button>
+                </ng-container>
+              </div>
+            </div>
+            <div class="d-flex flex-row">
+
+              <div class="carousel-container">
+                <ngb-carousel>
+                  <ng-template ngbSlide *ngFor="let img of order.images || []">
+                    <img [src]="img" alt="Product image">
+                  </ng-template>
+                </ngb-carousel>
+              </div>
+
+              <!-- Dettagli ordine -->
+              <div class="p-3 flex-grow-1">
+                <table class="table table-sm table-borderless">
+                  <tbody>
+                  <tr>
+                    <td class="td-head">Quantità</td>
+                    <td>{{ order.quantity}}</td>
+                  </tr>
+                  <tr>
+                    <td class="td-head">Descrizione</td>
+                    <td class="ellipsis-text">{{ order.articleDescription}}</td>
+                  </tr>
+                  <tr>
+                    <td class="td-head">ASIN</td>
+                    <td>{{ order.articleCode}}</td>
+                  </tr>
+                  <tr>
+                    <td class="td-head">SKU</td>
+                    <td>{{ order.articleSKU}}</td>
+                  </tr>
+                  <tr>
+                    <td class="td-head">Ordinato il</td>
+                    <td>{{ order.orderedAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                  </tr>
+                  <ng-container *ngIf="order.status === orderStatusEnum.ACCEPTED">
+                    <tr>
+                      <td class="td-head">Da spedire entro il</td>
+                      <td>{{ order.deliveryDate | date:'dd/MM/yyyy' }}</td>
+                    </tr>
+                  </ng-container>
+                  <ng-container *ngIf="order.status === orderStatusEnum.CANCELLED">
+                    <tr>
+                      <td class="td-head">Cancellato il</td>
+                      <td>{{ order.orderedAt | date:'dd/MM/yyyy HH:mm' }} - Motivo: {{ 'CAMPO DA GESTIRE A DB INSIEME ALLA DATA DELLA CANCELLAZIONE' }}</td>
+                    </tr>
+                  </ng-container>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeRejectModal($event)">Annulla</button>
-          <button type="button" class="btn btn-danger" [disabled]="rejectReason.trim().length===0" (click)="rejectOrderConfirmed()">Rifiuta</button>
-        </div>
       </div>
     </div>
-  </div>
-
-
-  <!-- Modale per il caricamento della ricevuta -->
-  <div class="modal" tabindex="-1" [ngClass]="{'d-block': showUploadReceiptModal}" (click)="closeUploadReceiptModal()">
-    <div class="modal-dialog" (click)="$event.stopPropagation()">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Carica Ricevuta</h5>
-          <button type="button" class="btn-close" (click)="closeUploadReceiptModal()"></button>
-        </div>
-        <div class="modal-body">
-          <p>Seleziona la ricevuta da caricare per l'ordine ID: {{ orderToUploadId }}</p>
-          <input type="file" class="form-control">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeUploadReceiptModal()">Annulla</button>
-          <button type="button" class="btn btn-primary">Carica</button>
-        </div>
+    <div class="col-md-3">
+      <div class="mb-3">
+        <label for="searchSKU" class="form-label">Cerca per SKU</label>
+        <input id="searchSKU" type="text" class="form-control">
       </div>
+      <button class="btn btn-dark btn-sm w-100">Applica Filtri</button>
+      <button class="btn btn-sm btn-outline-dark w-100 mt-3">Reset Filtri</button>
     </div>
   </div>
-
-
 </div>
 
-
-
+<!-- Modale di Conferma -->
+<ng-template #rejectOrderModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ordine {{selectedOrder?.code}}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>Inserisci la motivazione per cui stai rifiutando l'ordine</p>
+    <textarea class="form-control" [(ngModel)]="cancellationReason"></textarea>
+    <p class="text-muted fst-italic">Scrivi un minimo di 10 caratteri per rifiutare</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="modal.dismiss()">Annulla</button>
+    <button class="btn btn-danger fw-bold" (click)="modal.close('confirm')"
+            [disabled]="cancellationReason.trim().length < 10">Rifiuta
+    </button>
+  </div>
+</ng-template>

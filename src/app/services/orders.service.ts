@@ -1,11 +1,11 @@
-import { Injectable } from '@angular/core';
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { GetOrdersResponseModel } from '../models/order.model';
-import { tap, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
+import {Observable, throwError} from 'rxjs';
+import {environment} from '../../environments/environment';
+import {GetOrdersResponseModel} from '../models/order.model';
+import {catchError} from 'rxjs/operators';
 import {UpdateStatusRequestModel} from '../models/update-status-request-model';
+import {PagingModel} from '../models/paging.model';
 
 
 @Injectable({
@@ -15,17 +15,15 @@ export class OrdersService {
 
   private apiUrl = environment.apiBaseUrl + '/orders';  // Cambia l'endpoint per gli ordini
 
-  constructor(private http: HttpClient) {}
-
-  // Chiamata API per ottenere gli ordini dal backend
-  getOrders(isCancelled: boolean = false): Observable<GetOrdersResponseModel[]> {
-    const statusParam = isCancelled ? 'CANCELLED' : 'ACTIVE'; // Definisce il parametro
-    return this.http.get<GetOrdersResponseModel[]>(`${this.apiUrl}?status=${statusParam}`); // Usa statusParam nell'URL
+  constructor(private http: HttpClient) {
   }
 
+  getOrders(params: HttpParams): Observable<PagingModel<GetOrdersResponseModel[]>> {
+    return this.http.get<PagingModel<GetOrdersResponseModel[]>>(`${this.apiUrl}/all`, {
+      params
+    });
+  }
 
-
-  // Metodo per modificare lo stato di un ordine
   updateStatusOrder(updateStatusRequestModel: UpdateStatusRequestModel): Observable<GetOrdersResponseModel[]> {
     return this.http.put<GetOrdersResponseModel[]>(`${this.apiUrl}/status`, updateStatusRequestModel);
   }
@@ -40,14 +38,13 @@ export class OrdersService {
       Authorization: `Bearer ${token}`
     });
 
-    return this.http.post<any>(`${this.apiUrl}/${orderId}/upload-file`, fileData, { headers })
+    return this.http.post<any>(`${this.apiUrl}/${orderId}/upload-file`, fileData, {headers})
       .pipe(
-      tap(() => console.log('File caricato con successo')),
-      catchError(error => {
-        console.error('Errore nel caricamento del file:', error);
-        return throwError(() => error);
-      })
-    );
+        catchError(error => {
+          console.error('Errore nel caricamento del file:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }
 
