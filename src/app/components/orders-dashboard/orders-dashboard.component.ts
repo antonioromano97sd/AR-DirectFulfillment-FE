@@ -35,6 +35,7 @@ export class OrdersDashboardComponent implements OnInit {
   public cancellationReason: string = '';
 
   private statusFilter!: OrderStatusEnum;
+  private searchKeyValue: string | null = null;
 
 
   constructor(
@@ -67,6 +68,8 @@ export class OrdersDashboardComponent implements OnInit {
       .set('sortDirection', 'DESC');
     if (this.currentWarehouse !== 'ALL')
       httpParams = httpParams.set('warehouse', this.currentWarehouse)
+    if (this.searchKeyValue)
+      httpParams = httpParams.set('searchKey', this.searchKeyValue)
     this.ordersService.getOrders(httpParams).subscribe({
       next: (data) => {
         this.currentPage = data.pageNumber;
@@ -157,4 +160,12 @@ export class OrdersDashboardComponent implements OnInit {
     FileSaver.saveAs(blob, 'Etichetta_' + orderId);
   }
 
+  searchKey($event: any) {
+    if ($event.target.value && $event.target.value.trim().length > 0) {
+      this.searchKeyValue = $event.target.value;
+    } else {
+      this.searchKeyValue = null;
+    }
+    this.loadOrders(this.currentPage);
+  }
 }
