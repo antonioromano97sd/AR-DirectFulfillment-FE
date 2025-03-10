@@ -10,7 +10,7 @@ import {PagingModel} from '../../models/paging.model';
 import {HttpParams} from '@angular/common/http';
 import {OrderUtilService} from '../../services/order-util.service';
 import {combineLatest} from 'rxjs';
-import {swalSuccess, textSwalConfirmation} from '../../utils/swal.util';
+import {swalSuccess, textSwalConfirmation, textSwalError} from '../../utils/swal.util';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import * as FileSaver from 'file-saver';
 
@@ -122,12 +122,40 @@ export class OrdersDashboardComponent implements OnInit {
     });
   }
 
-  openRejectModal(content: any, order: GetOrdersResponseModel): void {
+  deliveryOrder(order: GetOrdersResponseModel): void {
+    textSwalConfirmation(`Il corriere ha già ritirato il pacco per l'ordine ?`, order.code, 'Sì, ha ritirato il pacco', 'No, non ancora').then(result => {
+      if (result.isConfirmed) {
+        this.ordersService.updateStatusOrder({
+          orderId: order.id,
+          status: OrderStatusEnum.SHIPPED
+        }).subscribe({
+          next: (response) => {
+            swalSuccess(`Ordine ${order.code} spedito`)
+            this.loadOrders(this.currentPage);
+          },
+          error: (err) => {
+            console.error('Errore nello spedire l\'ordine:', err);
+          }
+        });
+      } else {
+        textSwalError('Se il corriere non ha ancora ritirato il pacco non puoi segnare l\'ordine come spedito. Torna qui quando il corriere sarà passato');
+      }
+    });
+  }
+
+  openActionModal(content: any, order: GetOrdersResponseModel): void {
     this.selectedOrder = order;
     this.modalService.open(content, {centered: true}).result.then(
       (result) => {
-        if (result === 'confirm') {
-          this.rejectOrder(order);
+        switch (result) {
+          case 'rejectOrder': {
+            this.rejectOrder(order);
+            break
+          }
+          case 'uploadAndDownloadLabel': {
+            this.printLabel(order.id);
+            break
+          }
         }
       },
       () => {

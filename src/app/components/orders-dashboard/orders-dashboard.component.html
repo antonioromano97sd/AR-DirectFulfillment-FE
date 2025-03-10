@@ -62,11 +62,13 @@
               <div>
                 <ng-container *ngIf="order.status === orderStatusEnum.NEW">
                   <button class="btn btn-success btn-sm me-2 fw-bold" (click)="acceptOrder(order)">Accetta</button>
-                  <button class="btn btn-danger btn-sm fw-bold" (click)="openRejectModal(rejectOrderModal, order)">Rifiuta
+                  <button class="btn btn-danger btn-sm fw-bold" (click)="openActionModal(rejectOrderModal, order)">Rifiuta
                   </button>
                 </ng-container>
                 <ng-container *ngIf="order.status === orderStatusEnum.ACCEPTED">
-                  <button class="btn btn-secondary btn-sm me-2 fw-bold" (click)="printLabel(order.id)">Stampa etichetta
+                  <button class="btn btn-secondary btn-sm me-2 fw-bold" (click)="openActionModal(downloadLabelOrderModal, order)">Ottieni etichetta
+                  </button>
+                  <button class="btn btn-primary btn-sm me-2 fw-bold" (click)="deliveryOrder(order)">Affidato al corriere
                   </button>
                 </ng-container>
               </div>
@@ -136,7 +138,7 @@
   </div>
 </div>
 
-<!-- Modale di Conferma -->
+<!-- Modale di Rifiuto Ordine -->
 <ng-template #rejectOrderModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Ordine {{selectedOrder?.code}}</h5>
@@ -149,8 +151,26 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-secondary" (click)="modal.dismiss()">Annulla</button>
-    <button class="btn btn-danger fw-bold" (click)="modal.close('confirm')"
+    <button class="btn btn-danger fw-bold" (click)="modal.close('rejectOrder')"
             [disabled]="cancellationReason.trim().length < 10">Rifiuta
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modale di Stampa etichetta -->
+<ng-template #downloadLabelOrderModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ordine {{selectedOrder?.code}}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>Carica la fattura di vendita per procedere al download dell'etichetta</p>
+    <input class="form-control form-control-sm" type="file" accept="application/pdf"/>
+    <p class="mt-2 text-muted fst-italic">Il formato deve essere .pdf</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="modal.dismiss()">Annulla</button>
+    <button class="btn btn-success fw-bold" (click)="modal.close('uploadAndDownloadLabel')">Ottieni etichetta
     </button>
   </div>
 </ng-template>

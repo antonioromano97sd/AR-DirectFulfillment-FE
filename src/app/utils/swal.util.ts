@@ -10,6 +10,15 @@ export function textSwalConfirmation(text: string, title?: string, confirmButton
     cancelButtonText: cancelButtonText ? cancelButtonText : 'No, annulla'
   });
 }
+
+export function textSwalError(text: string, title?: string, confirmButtonText?: string, cancelButtonText?: string, icon: SweetAlertIcon = 'error') {
+  return Swal.fire({
+    title: title ? title : 'Ops',
+    text,
+    icon,
+    showCancelButton: false,
+  });
+}
 export function htmlSwalConfirmation(html: string, title?: string, confirmButtonText?: string, cancelButtonText?: string, icon: SweetAlertIcon = 'question') {
   return Swal.fire({
     title: title ? title : 'Sei sicuro ?',
