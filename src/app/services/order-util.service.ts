@@ -6,7 +6,7 @@ import {BehaviorSubject} from 'rxjs';
 })
 export class OrderUtilService {
 
-  public globalWarehouseSelected: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  public globalWarehouseSelected: BehaviorSubject<string> = new BehaviorSubject<string>('ALL');
 
   constructor() { }
 
