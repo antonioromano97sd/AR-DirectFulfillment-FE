@@ -1,17 +1,15 @@
 import {OrderStatusEnum} from './order-status.enum';
+import {GetOrderItemResponseModel} from './order-item.model';
 
 export class GetOrdersResponseModel {
   id!: number;
   code!: string;
-  articleCode!: string;
-  quantity!: number;
-  articleDescription!: string;
-  articleSKU!: string;
   deliveryAddress!: string;
   deliveryCarrier!: string;
   deliveryDate!: string;
   status!: OrderStatusEnum;
   orderedAt!: string;
-  images!: string[];
+  items!: GetOrderItemResponseModel[];
+  warehouse: any;
 }
 

@@ -13,6 +13,7 @@ import {combineLatest} from 'rxjs';
 import {swalSuccess, textSwalConfirmation, textSwalError} from '../../utils/swal.util';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import * as FileSaver from 'file-saver';
+import {GetOrderItemResponseModel} from '../../models/order-item.model';
 
 @Component({
   selector: 'app-orders-dashboard',
@@ -195,5 +196,31 @@ export class OrdersDashboardComponent implements OnInit {
       this.searchKeyValue = null;
     }
     this.loadOrders(this.currentPage);
+  }
+
+  getImagesByItems(order: GetOrdersResponseModel): string[] {
+    if (order.items.length == 1) {
+      return order.items[0].images.includes(";") ? order.items[0].images.split(";") : [order.items[0].images];
+    } else {
+      let articleImages: string[] = [];
+      if (order.items.length > 1) {
+        order.items.forEach(item => {
+          if (item.images.includes(";")) {
+            articleImages.push(item.images.split(";")[0])
+          } else {
+            articleImages.push(item.images)
+          }
+        })
+      }
+      return articleImages;
+    }
+  }
+
+  calculateTotalQuantityByOrderItems(items: GetOrderItemResponseModel[]): number {
+    let sumOfQuantity = 0;
+    items.forEach(item => {
+      sumOfQuantity += item.quantity;
+    })
+    return sumOfQuantity;
   }
 }

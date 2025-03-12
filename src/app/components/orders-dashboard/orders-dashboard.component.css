@@ -16,3 +16,7 @@
 .td-head {
   width: 150px;
 }
+
+.order-item {
+  border-left: 1px solid #131921
+}

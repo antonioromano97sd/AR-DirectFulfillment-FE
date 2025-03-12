@@ -3,7 +3,8 @@
     <div class="col-md-12">
       <div class="d-flex justify-content-center mb-3">
         <div class="flex-grow-0 vw-100">
-          <input type="text" class="form-control form-control-sm" placeholder="Inserisci il testo da cercare" (keyup.enter)="searchKey($event)"/>
+          <input type="text" class="form-control form-control-sm" placeholder="Inserisci il testo da cercare"
+                 (keyup.enter)="searchKey($event)"/>
         </div>
       </div>
       <div class="d-flex justify-content-between">
@@ -55,53 +56,55 @@
             <div class="card-header text-white d-flex justify-content-between align-items-center">
               <!-- Sezione Ordine (Sinistra) -->
               <div>
-                <span class="card-title fw-bold">Ordine: {{ order.code }} </span>
+                <span class="card-title fw-bold">Ordine: {{ order.code }}</span>
+                <span class="card-title fw-bold ms-5">Prodotti: {{ order.items.length }}</span>
+                <span class="card-title fw-bold ms-5">Quantità totali: {{ calculateTotalQuantityByOrderItems(order.items) }}</span>
               </div>
 
               <!-- Sezione Pulsanti (Destra) -->
               <div>
                 <ng-container *ngIf="order.status === orderStatusEnum.NEW">
                   <button class="btn btn-success btn-sm me-2 fw-bold" (click)="acceptOrder(order)">Accetta</button>
-                  <button class="btn btn-danger btn-sm fw-bold" (click)="openActionModal(rejectOrderModal, order)">Rifiuta
+                  <button class="btn btn-danger btn-sm fw-bold" (click)="openActionModal(rejectOrderModal, order)">
+                    Rifiuta
                   </button>
                 </ng-container>
                 <ng-container *ngIf="order.status === orderStatusEnum.ACCEPTED">
-                  <button class="btn btn-secondary btn-sm me-2 fw-bold" (click)="openActionModal(downloadLabelOrderModal, order)">Ottieni etichetta
+                  <button class="btn btn-secondary btn-sm me-2 fw-bold"
+                          (click)="openActionModal(downloadLabelOrderModal, order)">Ottieni etichetta
                   </button>
-                  <button class="btn btn-primary btn-sm me-2 fw-bold" (click)="deliveryOrder(order)">Affidato al corriere
+                  <button class="btn btn-primary btn-sm me-2 fw-bold" (click)="deliveryOrder(order)">Affidato al
+                    corriere
                   </button>
                 </ng-container>
               </div>
             </div>
-            <div class="d-flex flex-row">
+            <div class="d-flex flex-row" [ngClass]="order.items.length > 3 ? 'overflow-x-scroll' : ''">
 
               <div class="carousel-container">
                 <ngb-carousel>
-                  <ng-template ngbSlide *ngFor="let img of order.images || []">
+                  <ng-template ngbSlide *ngFor="let img of getImagesByItems(order)">
                     <img [src]="img" alt="Product image">
                   </ng-template>
                 </ngb-carousel>
               </div>
 
               <!-- Dettagli ordine -->
-              <div class="p-3 flex-grow-1">
+              <div class="p-3 flex-grow-1" [ngClass]="order.items.length > 1 ? 'order-item' : ''"
+                   *ngFor="let item of order.items">
                 <table class="table table-sm table-borderless">
                   <tbody>
                   <tr>
                     <td class="td-head">Quantità</td>
-                    <td>{{ order.quantity}}</td>
+                    <td>{{ item.quantity}}</td>
                   </tr>
                   <tr>
                     <td class="td-head">Descrizione</td>
-                    <td class="ellipsis-text">{{ order.articleDescription}}</td>
-                  </tr>
-                  <tr>
-                    <td class="td-head">ASIN</td>
-                    <td>{{ order.articleCode}}</td>
+                    <td class="ellipsis-text">{{ item.description}}</td>
                   </tr>
                   <tr>
                     <td class="td-head">SKU</td>
-                    <td>{{ order.articleSKU}}</td>
+                    <td>{{ item.sku}}</td>
                   </tr>
                   <tr>
                     <td class="td-head">Ordinato il</td>
@@ -116,12 +119,14 @@
                   <ng-container *ngIf="order.status === orderStatusEnum.CANCELLED">
                     <tr>
                       <td class="td-head">Cancellato il</td>
-                      <td>{{ order.orderedAt | date:'dd/MM/yyyy HH:mm' }} - Motivo: {{ 'CAMPO DA GESTIRE A DB INSIEME ALLA DATA DELLA CANCELLAZIONE' }}</td>
+                      <td>{{ order.orderedAt | date:'dd/MM/yyyy HH:mm' }} -
+                        Motivo: {{ 'CAMPO DA GESTIRE A DB INSIEME ALLA DATA DELLA CANCELLAZIONE' }}</td>
                     </tr>
                   </ng-container>
                   </tbody>
                 </table>
               </div>
+
             </div>
           </div>
         </div>
